@@ -26,15 +26,39 @@ typedef struct neural_network
     int input_size;
     int hidden_size;
     int output_size;
+    
+    double* input_neurons;
+    double* hidden_neurons;
+    double* output_neurons;
 }nn;
 
 /*NEURAL NETWORK SECTION START*/
 
 void init_network(nn* n)
 {
+    //CALLING MORE THAN ONCE WILL LEAK MEMORY
     n->input_size = NEURAL_INPUT;
     n->hidden_size = NEURAL_HIDDEN;
     n->output_size = NEURAL_OUTPUT;
+    
+    n->input_neurons = malloc(sizeof(double)*NEURAL_INPUT);
+    n->hidden_neurons = malloc(sizeof(double)*NEURAL_HIDDEN);
+    n->output_neurons = malloc(sizeof(double)*NEURAL_OUTPUT);
+    
+    for(int i=0; i < NEURAL_INPUT; i++)
+    {
+        init_neuron(n->input_neurons[i]);
+    }
+    
+    for(int i=0; i < NEURAL_HIDDEN; i++)
+    {
+        init_neuron(n->hidden_neurons[i]);
+    }
+    
+    for(int i=0; i < NEURAL_OUTPUT; i++)
+    {
+        init_neuron(n->output_neurons[i]);
+    }
 }
 
 int guess(nn* n, int in_x, int in_y)
