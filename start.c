@@ -3,7 +3,7 @@
 #include <time.h>
 #include <math.h>
 
-#define AGENT_STEPS 250
+#define AGENT_STEPS 300
 #define END_X 100
 #define END_Y 0
 
@@ -24,12 +24,17 @@ typedef struct agent_struct
 
 agent* agents;
 
+void reset_agent(agent* a)
+{
+    a->x = 0;
+    a->y = 0;
+    a->reward = 0;
+}
 
 void do_agent(agent* a)
 {
   //srand(a->seed);
-  a->x = 0;
-  a->y = 0;
+  reset_agent(a);
   for(int i=0; i < AGENT_STEPS; i++)
     {
       //a->dir = rand()%4;
@@ -57,6 +62,13 @@ void do_agent(agent* a)
 	  }
       
 	}
+	if(a->x == END_X && a->y == END_Y)
+	{
+	    a->reward = 10000;
+	    return;
+	}
+	else
+	    a->reward--;
     }
 }
 
@@ -141,6 +153,7 @@ void evolve(agent* base, agent* better, int l)
 	  for(int i=0; i < count; i++)
 	    {
 	      base->dirs[i] = rand()%4;
+	      //randomize_dirs(base);
 	    }
 	}
     }
@@ -150,7 +163,7 @@ void evolve(agent* base, agent* better, int l)
       //Convert entire ai to Best
       //Mutate 10% of dirs
       copy_dirs_from(better, base);
-      int count = rand()%(AGENT_STEPS/10);
+      int count = rand()%(AGENT_STEPS/5);
       for(int i=0; i < count; i++)
 	{
 	  base->dirs[i] = rand()%4;
@@ -194,7 +207,7 @@ double dist(int x, int y)
 
 void get_reward(agent* a)
 {
-  a->reward = 10000.0/dist(a->x, a->y);
+  a->reward *= 1000.0/dist(a->x, a->y);
   //return a->reward;
 }
 
@@ -208,8 +221,8 @@ int main()
   
   init_agents(agent_count);
   int z=0;
-  while(1)
-  //for(z=0; z < 1000; z++)
+  //while(1)
+  for(z=0; z < 10000; z++)
     {
   
       for(int i=0; i < agent_count; i++)
@@ -242,6 +255,36 @@ int main()
       z++;
     }
   //printf("%d | Best: %lf x: %d y: %d | Worst: %lf x: %d y: %d\n", z, agents[0].reward, agents[0].x, agents[0].y, agents[agent_count-1].reward, agents[agent_count-1].x, agents[agent_count-1].y);
+
+    /*int x = 0;
+    int y = 0;
+    for(int i=0; i < AGENT_STEPS; i++)
+    {
+        switch(agents[0].dirs[i])
+	{
+	case 0:
+	  {
+	    x++;
+	    break;
+	  }
+	case 1:
+	  {
+	    x--;
+	    break;
+	  }
+	case 2:
+	  {
+	    y++;
+	    break;
+	  }
+	case 3:
+	  {
+	    y--;
+	    break;
+	  }
+    }
+    printf("dirs[%d]: %d X: %d Y: %d\n", i, agents[0].dirs[i], x, y);
+    }*/
 
   //Free all memory
   //Free each agents dirs
