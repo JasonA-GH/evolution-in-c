@@ -23,9 +23,10 @@ typedef struct neural_network
     //inputs
     //hidden
     //output
-    int input_size;
-    int hidden_size;
-    int output_size;
+    
+    //int input_size;
+    //int hidden_size;
+    //int output_size;
     
     double* input_neurons;
     double* hidden_neurons;
@@ -34,12 +35,19 @@ typedef struct neural_network
 
 /*NEURAL NETWORK SECTION START*/
 
+
+
+void init_neuron(double* n)
+{
+    *n = (double)rand()*2/(double)RAND_MAX;
+}
+
 void init_network(nn* n)
 {
     //CALLING MORE THAN ONCE WILL LEAK MEMORY
-    n->input_size = NEURAL_INPUT;
-    n->hidden_size = NEURAL_HIDDEN;
-    n->output_size = NEURAL_OUTPUT;
+    //n->input_size = NEURAL_INPUT;
+    //n->hidden_size = NEURAL_HIDDEN;
+    //n->output_size = NEURAL_OUTPUT;
     
     n->input_neurons = malloc(sizeof(double)*NEURAL_INPUT);
     n->hidden_neurons = malloc(sizeof(double)*NEURAL_HIDDEN);
@@ -47,23 +55,48 @@ void init_network(nn* n)
     
     for(int i=0; i < NEURAL_INPUT; i++)
     {
-        init_neuron(n->input_neurons[i]);
+        init_neuron(&(n->input_neurons[i]));
     }
     
     for(int i=0; i < NEURAL_HIDDEN; i++)
     {
-        init_neuron(n->hidden_neurons[i]);
+        init_neuron(&(n->hidden_neurons[i]));
     }
     
     for(int i=0; i < NEURAL_OUTPUT; i++)
     {
-        init_neuron(n->output_neurons[i]);
+        init_neuron(&(n->output_neurons[i]));
     }
 }
 
-int guess(nn* n, int in_x, int in_y)
+int guess(nn* n, int* ins)
 {
-    //Do the guess
+    //Multiply input by ins
+    //Multiply input layer's output by hidden
+    //Multiply hidden layer's output by output
+    
+    double* in_to_hidden = malloc(sizeof(double)*NEURAL_HIDDEN*NEURAL_INPUT);
+    double* hid_to_out = malloc(sizeof(double)*NEURAL_OUTPUT*NEURAL_HIDDEN);
+    
+    //input[0] = hidden[0-8]
+    //input[1] = hidden[0-8]
+    
+    //16 weights
+    
+    for(int i=0; i < NEURAL_INPUT; i++)
+    {
+        in_to_hidden[i]ins[i]
+    }
+    
+    for(int i=0; i < NEURAL_HIDDEN; i++)
+    {
+        
+    }
+    
+    for(int i=0; i < NEURAL_OUTPUT; i++)
+    {
+        
+    }
 }
 
 void train(nn* n, int in_x, int in_y)
