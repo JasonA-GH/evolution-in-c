@@ -3,7 +3,7 @@
 #include <time.h>
 #include <math.h>
 
-#define AGENT_STEPS 300
+#define AGENT_STEPS 100
 #define END_X 100
 #define END_Y 0
 
@@ -64,7 +64,7 @@ void do_agent(agent* a)
 	}
 	if(a->x == END_X && a->y == END_Y)
 	{
-	    a->reward = 10000;
+	    a->reward = 10000.0/i;
 	    return;
 	}
 	else
@@ -207,7 +207,8 @@ double dist(int x, int y)
 
 void get_reward(agent* a)
 {
-  a->reward *= dist(a->x, a->y);
+    if(a->reward < 0)
+    a->reward *= dist(a->x, a->y);
   //return a->reward;
 }
 
