@@ -152,7 +152,7 @@ void evolve(agent* base, agent* better, int l)
 	  int count = rand()%(AGENT_STEPS/10);
 	  for(int i=0; i < count; i++)
 	    {
-	      base->dirs[i] = rand()%4;
+	      base->dirs[rand()%AGENT_STEPS] = rand()%4;
 	      //randomize_dirs(base);
 	    }
 	}
@@ -207,7 +207,7 @@ double dist(int x, int y)
 
 void get_reward(agent* a)
 {
-  a->reward *= 1000.0/dist(a->x, a->y);
+  a->reward *= dist(a->x, a->y);
   //return a->reward;
 }
 
