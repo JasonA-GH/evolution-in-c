@@ -3,9 +3,13 @@
 #include <time.h>
 #include <math.h>
 
-#define AGENT_STEPS 100
+#define AGENT_STEPS 250
 #define END_X 100
 #define END_Y 0
+
+#define LEVEL_MUTATE 0
+#define LEVEL_BEST 1
+#define LEVEL_RANDOM 2
 
 const int agent_count = 100;
 
@@ -81,13 +85,19 @@ void copy(agent* a, agent* b)
   //b->seed = a->seed;
 }
 
-void init_dirs(agent* a)
+void randomize_dirs(agent* a)
 {
-  a->dirs = malloc(sizeof(int)*AGENT_STEPS);
   for(int i=0; i < AGENT_STEPS; i++)
     {
       a->dirs[i] = rand()%4;
     }
+}
+
+void init_dirs(agent* a)
+{
+  //IF THIS IS CALLED MORE THAN ONCE IT WILL LEAK MEMORY
+  a->dirs = malloc(sizeof(int)*AGENT_STEPS);
+  randomize_dirs(a);
 }
 
 void init_agents(int count)
@@ -106,41 +116,52 @@ void init_agents(int count)
     }
 }
 
-void evolve(agent* base, agent* better)
+void evolve(agent* base, agent* better, int l)
 {
-  //srand(time(NULL));
-  //a->seed++;
-
-
-  //Randomly choose index
-  //Randomly choose whether to change first or second half
-  //10% chance to mutate 10% of the dirs
-
-  int index = rand()%AGENT_STEPS;
-  if(rand()%2 == 0)//FIRST HALF
+  if(l == LEVEL_MUTATE)
     {
-      //end = AGENT_STEPS;
-      copy_dirs_from_start_end(better, base, 0, index);
+      //Randomly choose index
+      //Randomly choose whether to change first or second half
+      //10% chance to mutate 10% of the dirs
+      
+      int index = rand()%AGENT_STEPS;
+      if(rand()%2 == 0)//FIRST HALF
+	{
+	  //end = AGENT_STEPS;
+	  copy_dirs_from_start_end(better, base, 0, index);
+	}
+      else//SECOND HALF
+	{
+	  copy_dirs_from_start_end(better, base, index, AGENT_STEPS);
+	}
+
+      if(rand()%10 == 0)
+	{
+	  int count = rand()%(AGENT_STEPS/10);
+	  for(int i=0; i < count; i++)
+	    {
+	      base->dirs[i] = rand()%4;
+	    }
+	}
     }
-  else//SECOND HALF
+  else if(l == LEVEL_BEST)
     {
-      copy_dirs_from_start_end(better, base, index, AGENT_STEPS);
-    }
-
-  if(rand()%10 == 0)
-    {
+      //bottom half (minus the bottom 10)
+      //Convert entire ai to Best
+      //Mutate 10% of dirs
+      copy_dirs_from(better, base);
       int count = rand()%(AGENT_STEPS/10);
       for(int i=0; i < count; i++)
 	{
 	  base->dirs[i] = rand()%4;
 	}
+      
     }
-  
-  //bottom half (minus the bottom 10)
-  //Convert entire ai to Best
-  //Mutate 10% of dirs
-
-  //Last 10% just randomly generate
+  else if(l == LEVEL_RANDOM)
+    {
+      //Last 10% just randomly generate
+      randomize_dirs(base);
+    }
 }
 
 void sort()
@@ -187,7 +208,8 @@ int main()
   
   init_agents(agent_count);
   int z=0;
-  for(z=0; z < 1000; z++)
+  while(1)
+  //for(z=0; z < 1000; z++)
     {
   
       for(int i=0; i < agent_count; i++)
@@ -203,14 +225,28 @@ int main()
 	printf("%d | Best: %lf x: %d y: %d | Worst: %lf x: %d y: %d\n", z, agents[0].reward, agents[0].x, agents[0].y, agents[agent_count-1].reward, agents[agent_count-1].x, agents[agent_count-1].y);
 
       //printf("best seed %d\n", agents[0].seed);
-      for(int i=1; i < agent_count; i++)
+      for(int i=1; i < agent_count/2; i++)
 	{
-	  evolve(&(agents[i]), &(agents[i-1]));
+	  evolve(&(agents[i]), &(agents[i-1]), LEVEL_MUTATE);
 	}
-    }
-  printf("%d | Best: %lf x: %d y: %d | Worst: %lf x: %d y: %d\n", z, agents[0].reward, agents[0].x, agents[0].y, agents[agent_count-1].reward, agents[agent_count-1].x, agents[agent_count-1].y);
 
-  
+      for(int i=agent_count/2; i < agent_count-10; i++)
+	{
+	  evolve(&(agents[i]), &(agents[0]), LEVEL_BEST);
+	}
+
+      for(int i=agent_count-10; i < agent_count; i++)
+	{
+	  evolve(&(agents[i]), &(agents[0]), LEVEL_RANDOM);
+	}
+      z++;
+    }
+  //printf("%d | Best: %lf x: %d y: %d | Worst: %lf x: %d y: %d\n", z, agents[0].reward, agents[0].x, agents[0].y, agents[agent_count-1].reward, agents[agent_count-1].x, agents[agent_count-1].y);
+
+  //Free all memory
+  //Free each agents dirs
+  //Free agents
   
   return 0;
 }
+ 
