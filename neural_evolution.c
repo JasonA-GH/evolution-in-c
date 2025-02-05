@@ -85,7 +85,11 @@ int guess(nn* n, int* ins)
     
     for(int i=0; i < NEURAL_INPUT; i++)
     {
-        in_to_hidden[i]ins[i]
+        for(int j=0; j < NEURAL_HIDDEN; j++)
+        {
+            
+        }
+        
     }
     
     for(int i=0; i < NEURAL_HIDDEN; i++)
