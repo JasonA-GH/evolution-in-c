@@ -28,18 +28,23 @@ typedef struct neural_network
     //int hidden_size;
     //int output_size;
     
-    double* input_neurons;
-    double* hidden_neurons;
-    double* output_neurons;
+    //double* input_neurons;
+    //double* hidden_neurons;
+    //double* output_neurons;
+    
+    double* in_to_hid;
+    double* hid_to_out;
+    
 }nn;
 
 /*NEURAL NETWORK SECTION START*/
 
 
 
-void init_neuron(double* n)
+double random_weight(/*double* n*/)
 {
-    *n = (double)rand()*2/(double)RAND_MAX;
+    //*n = (double)rand()*2/(double)RAND_MAX;
+    return (double)rand()*2/(double)RAND_MAX;
 }
 
 void init_network(nn* n)
@@ -49,7 +54,7 @@ void init_network(nn* n)
     //n->hidden_size = NEURAL_HIDDEN;
     //n->output_size = NEURAL_OUTPUT;
     
-    n->input_neurons = malloc(sizeof(double)*NEURAL_INPUT);
+    /*n->input_neurons = malloc(sizeof(double)*NEURAL_INPUT);
     n->hidden_neurons = malloc(sizeof(double)*NEURAL_HIDDEN);
     n->output_neurons = malloc(sizeof(double)*NEURAL_OUTPUT);
     
@@ -66,6 +71,19 @@ void init_network(nn* n)
     for(int i=0; i < NEURAL_OUTPUT; i++)
     {
         init_neuron(&(n->output_neurons[i]));
+    }*/
+    
+    n->in_to_hid = malloc(sizeof(double)*NEURAL_INPUT*NEURAL_HIDDEN);
+    n->hid_to_out = malloc(sizeof(double)*NEURAL_HIDDEN*NEURAL_OUTPUT);
+    
+    for(int i=0; i < NEURAL_INPUT*NEURAL_HIDDEN; i++)
+    {
+        n->in_to_hid[i] = random_weight();
+    }
+    
+    for(int i=0; i < NEURAL_HIDDEN*NEURAL_OUTPUT; i++)
+    {
+        n->hid_to_out[i] = random_weight();
     }
 }
 
@@ -75,31 +93,28 @@ int guess(nn* n, int* ins)
     //Multiply input layer's output by hidden
     //Multiply hidden layer's output by output
     
-    double* in_to_hidden = malloc(sizeof(double)*NEURAL_HIDDEN*NEURAL_INPUT);
-    double* hid_to_out = malloc(sizeof(double)*NEURAL_OUTPUT*NEURAL_HIDDEN);
+    //double* in_to_hidden = malloc(sizeof(double)*NEURAL_HIDDEN*NEURAL_INPUT);
+    //double* hid_to_out = malloc(sizeof(double)*NEURAL_OUTPUT*NEURAL_HIDDEN);
     
-    //input[0] = hidden[0-8]
-    //input[1] = hidden[0-8]
+    //input[0] = hidden[0-8] //0-7
+    //input[1] = hidden[0-8] // 8-15
     
     //16 weights
     
-    for(int i=0; i < NEURAL_INPUT; i++)
+    //ins * each input to hidden weight
+    //ins[0] * input[0] to hidden
+    //ins[1] * input[1] to hidden
+    
+    //ins[0%8]
+    
+    for(int i=0; i < NEURAL_INPUT*NEURAL_HIDDEN; i++)
     {
-        for(int j=0; j < NEURAL_HIDDEN; j++)
-        {
-            
-        }
-        
+        n->in_to_hid[i] 
     }
     
-    for(int i=0; i < NEURAL_HIDDEN; i++)
+    for(int i=0; i < NEURAL_HIDDEN*NEURAL_OUTPUT; i++)
     {
-        
-    }
-    
-    for(int i=0; i < NEURAL_OUTPUT; i++)
-    {
-        
+        n->hid_to_out[i] = random_weight();
     }
 }
 
