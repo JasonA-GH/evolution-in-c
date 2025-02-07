@@ -97,7 +97,7 @@ void init_network(nn* n)
     
 }
 
-int* guess(nn* n, int* ins)
+double* guess(nn* n, int* ins)
 {
     //Multiply input by ins
     //Multiply input layer's output by hidden
@@ -117,6 +117,8 @@ int* guess(nn* n, int* ins)
     
     //ins[0%8]
     
+    double* output = malloc(sizeof(double)*NEURAL_OUTPUT);
+    
     double** i_weights = malloc(sizeof(double*)*NEURAL_INPUT);
     double** h_weights = malloc(sizeof(double*)*NEURAL_HIDDEN);
     
@@ -130,6 +132,7 @@ int* guess(nn* n, int* ins)
         h_weights[i] = malloc(sizeof(double)*NEURAL_OUTPUT);
     }
     
+    //Multiply ins by input layer weights
     for(int i=0; i < NEURAL_INPUT; i++)
     {
         for(int j=0; j < NEURAL_HIDDEN; j++)
@@ -138,13 +141,33 @@ int* guess(nn* n, int* ins)
         }
     }
     
+    //Set hidden neurons to sum of input layer weights times input
+    double* hidden_layer = malloc(sizeof(double)*NEURAL_HIDDEN);
+    for(int j=0; j < NEURAL_HIDDEN; j++)
+        {
+            hidden_layer[j] = 0;
+            for(int i=0; i < NEURAL_INPUT; i++)
+            {
+                hidden_layer[j] += i_weights[j][i];//add bias here
+            }
+        }
+    
+    //Multiply hidden layer weights by input layer weights
+    
     for(int i=0; i < NEURAL_HIDDEN; i++)
     {
         for(int j=0; j < NEURAL_OUTPUT; j++)
         {
-            h_weights[i][j] = n->hit_to_out[i][j] * i_weights[z][i];
+            h_weights[i][j] = n->hid_to_out[i][j] * hidden_layer[i];
         }
     }
+    
+    for(int i=0; i < NEURAL_OUTPUT; i++)
+    {
+        //output[i] = h_weights[j];
+    }
+    
+    //Free i_weights, h_weights, and hidden_layer
     
 }
 
