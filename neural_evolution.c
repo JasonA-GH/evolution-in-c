@@ -32,8 +32,8 @@ typedef struct neural_network
     //double* hidden_neurons;
     //double* output_neurons;
     
-    double* in_to_hid;
-    double* hid_to_out;
+    double** in_to_hid;
+    double** hid_to_out;
     
 }nn;
 
@@ -73,21 +73,31 @@ void init_network(nn* n)
         init_neuron(&(n->output_neurons[i]));
     }*/
     
-    n->in_to_hid = malloc(sizeof(double)*NEURAL_INPUT*NEURAL_HIDDEN);
-    n->hid_to_out = malloc(sizeof(double)*NEURAL_HIDDEN*NEURAL_OUTPUT);
+    n->in_to_hid = malloc(sizeof(double*)*NEURAL_INPUT);
+    n->hid_to_out = malloc(sizeof(double*)*NEURAL_HIDDEN);
     
-    for(int i=0; i < NEURAL_INPUT*NEURAL_HIDDEN; i++)
+    for(int i=0; i < NEURAL_INPUT; i++)
     {
-        n->in_to_hid[i] = random_weight();
+        n->in_to_hid[i] = malloc(sizeof(double)*NEURAL_HIDDEN);
+        for(int j=0; j < NEURAL_HIDDEN; j++)
+        {
+            n->in_to_hid[i][j] = random_weight();
+        }
     }
     
-    for(int i=0; i < NEURAL_HIDDEN*NEURAL_OUTPUT; i++)
+    for(int i=0; i < NEURAL_HIDDEN; i++)
     {
-        n->hid_to_out[i] = random_weight();
+        n->hid_to_out[i] = malloc(sizeof(double)*NEURAL_OUTPUT);
+        
+        for(int j=0; j < NEURAL_OUTPUT; j++)
+        {
+            n->hid_to_out[i][j] = random_weight();
+        }
     }
+    
 }
 
-int guess(nn* n, int* ins)
+int* guess(nn* n, int* ins)
 {
     //Multiply input by ins
     //Multiply input layer's output by hidden
@@ -107,15 +117,35 @@ int guess(nn* n, int* ins)
     
     //ins[0%8]
     
-    for(int i=0; i < NEURAL_INPUT*NEURAL_HIDDEN; i++)
+    double** i_weights = malloc(sizeof(double*)*NEURAL_INPUT);
+    double** h_weights = malloc(sizeof(double*)*NEURAL_HIDDEN);
+    
+    for(int i=0; i < NEURAL_INPUT; i++)
     {
-        n->in_to_hid[i] 
+        i_weights[i] = malloc(sizeof(double)*NEURAL_HIDDEN);
     }
     
-    for(int i=0; i < NEURAL_HIDDEN*NEURAL_OUTPUT; i++)
+    for(int i=0; i < NEURAL_HIDDEN; i++)
     {
-        n->hid_to_out[i] = random_weight();
+        h_weights[i] = malloc(sizeof(double)*NEURAL_OUTPUT);
     }
+    
+    for(int i=0; i < NEURAL_INPUT; i++)
+    {
+        for(int j=0; j < NEURAL_HIDDEN; j++)
+        {
+            i_weights[i][j] = n->in_to_hid[i][j] * ins[i];
+        }
+    }
+    
+    for(int i=0; i < NEURAL_HIDDEN; i++)
+    {
+        for(int j=0; j < NEURAL_OUTPUT; j++)
+        {
+            h_weights[i][j] = n->hit_to_out[i][j] * i_weights[z][i];
+        }
+    }
+    
 }
 
 void train(nn* n, int in_x, int in_y)
