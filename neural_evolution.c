@@ -168,7 +168,18 @@ double* guess(nn* n, int* ins)
     }
     
     //Free i_weights, h_weights, and hidden_layer
+    for(int i=0; i < NEURAL_INPUT; i++)
+    {
+        free(i_weights[i]);
+    }
     
+    for(int i=0; i < NEURAL_HIDDEN; i++)
+    {
+        free(h_weights[i]);
+    }
+    free(i_weights);
+    free(h_weights);
+    free(hidden_layer);
 }
 
 void train(nn* n, int in_x, int in_y)
