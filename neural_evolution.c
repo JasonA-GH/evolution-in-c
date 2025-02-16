@@ -4,196 +4,23 @@
 #include <math.h>
 
 #define AGENT_STEPS 100
-#define END_X 100
-#define END_Y 0
+#define END_X 50
+#define END_Y 50
 
 #define LEVEL_MUTATE 0
 #define LEVEL_BEST 1
 #define LEVEL_RANDOM 2
 
-#define NEURAL_INPUT 2
-#define NEURAL_HIDDEN 8
-#define NEURAL_OUTPUT 1
+#include "evo_nn.h"
 
 const int agent_count = 100;
-
-typedef struct neural_network
-{
-    //Make neural_network
-    //inputs
-    //hidden
-    //output
-    
-    //int input_size;
-    //int hidden_size;
-    //int output_size;
-    
-    //double* input_neurons;
-    //double* hidden_neurons;
-    //double* output_neurons;
-    
-    double** in_to_hid;
-    double** hid_to_out;
-    
-}nn;
-
-/*NEURAL NETWORK SECTION START*/
-
-
-
-double random_weight(/*double* n*/)
-{
-    //*n = (double)rand()*2/(double)RAND_MAX;
-    return (double)rand()*2/(double)RAND_MAX;
-}
-
-void init_network(nn* n)
-{
-    //CALLING MORE THAN ONCE WILL LEAK MEMORY
-    //n->input_size = NEURAL_INPUT;
-    //n->hidden_size = NEURAL_HIDDEN;
-    //n->output_size = NEURAL_OUTPUT;
-    
-    /*n->input_neurons = malloc(sizeof(double)*NEURAL_INPUT);
-    n->hidden_neurons = malloc(sizeof(double)*NEURAL_HIDDEN);
-    n->output_neurons = malloc(sizeof(double)*NEURAL_OUTPUT);
-    
-    for(int i=0; i < NEURAL_INPUT; i++)
-    {
-        init_neuron(&(n->input_neurons[i]));
-    }
-    
-    for(int i=0; i < NEURAL_HIDDEN; i++)
-    {
-        init_neuron(&(n->hidden_neurons[i]));
-    }
-    
-    for(int i=0; i < NEURAL_OUTPUT; i++)
-    {
-        init_neuron(&(n->output_neurons[i]));
-    }*/
-    
-    n->in_to_hid = malloc(sizeof(double*)*NEURAL_INPUT);
-    n->hid_to_out = malloc(sizeof(double*)*NEURAL_HIDDEN);
-    
-    for(int i=0; i < NEURAL_INPUT; i++)
-    {
-        n->in_to_hid[i] = malloc(sizeof(double)*NEURAL_HIDDEN);
-        for(int j=0; j < NEURAL_HIDDEN; j++)
-        {
-            n->in_to_hid[i][j] = random_weight();
-        }
-    }
-    
-    for(int i=0; i < NEURAL_HIDDEN; i++)
-    {
-        n->hid_to_out[i] = malloc(sizeof(double)*NEURAL_OUTPUT);
-        
-        for(int j=0; j < NEURAL_OUTPUT; j++)
-        {
-            n->hid_to_out[i][j] = random_weight();
-        }
-    }
-    
-}
-
-double* guess(nn* n, int* ins)
-{
-    //Multiply input by ins
-    //Multiply input layer's output by hidden
-    //Multiply hidden layer's output by output
-    
-    //double* in_to_hidden = malloc(sizeof(double)*NEURAL_HIDDEN*NEURAL_INPUT);
-    //double* hid_to_out = malloc(sizeof(double)*NEURAL_OUTPUT*NEURAL_HIDDEN);
-    
-    //input[0] = hidden[0-8] //0-7
-    //input[1] = hidden[0-8] // 8-15
-    
-    //16 weights
-    
-    //ins * each input to hidden weight
-    //ins[0] * input[0] to hidden
-    //ins[1] * input[1] to hidden
-    
-    //ins[0%8]
-    
-    double* output = malloc(sizeof(double)*NEURAL_OUTPUT);
-    
-    double** i_weights = malloc(sizeof(double*)*NEURAL_INPUT);
-    double** h_weights = malloc(sizeof(double*)*NEURAL_HIDDEN);
-    
-    for(int i=0; i < NEURAL_INPUT; i++)
-    {
-        i_weights[i] = malloc(sizeof(double)*NEURAL_HIDDEN);
-    }
-    
-    for(int i=0; i < NEURAL_HIDDEN; i++)
-    {
-        h_weights[i] = malloc(sizeof(double)*NEURAL_OUTPUT);
-    }
-    
-    //Multiply ins by input layer weights
-    for(int i=0; i < NEURAL_INPUT; i++)
-    {
-        for(int j=0; j < NEURAL_HIDDEN; j++)
-        {
-            i_weights[i][j] = n->in_to_hid[i][j] * ins[i];
-        }
-    }
-    
-    //Set hidden neurons to sum of input layer weights times input
-    double* hidden_layer = malloc(sizeof(double)*NEURAL_HIDDEN);
-    for(int j=0; j < NEURAL_HIDDEN; j++)
-        {
-            hidden_layer[j] = 0;
-            for(int i=0; i < NEURAL_INPUT; i++)
-            {
-                hidden_layer[j] += i_weights[j][i];//add bias here
-            }
-        }
-    
-    //Multiply hidden layer weights by input layer weights
-    
-    for(int i=0; i < NEURAL_HIDDEN; i++)
-    {
-        for(int j=0; j < NEURAL_OUTPUT; j++)
-        {
-            h_weights[i][j] = n->hid_to_out[i][j] * hidden_layer[i];
-        }
-    }
-    
-    for(int i=0; i < NEURAL_OUTPUT; i++)
-    {
-        //output[i] = h_weights[j];
-    }
-    
-    //Free i_weights, h_weights, and hidden_layer
-    for(int i=0; i < NEURAL_INPUT; i++)
-    {
-        free(i_weights[i]);
-    }
-    
-    for(int i=0; i < NEURAL_HIDDEN; i++)
-    {
-        free(h_weights[i]);
-    }
-    free(i_weights);
-    free(h_weights);
-    free(hidden_layer);
-}
-
-void train(nn* n, int in_x, int in_y)
-{
-    //Train
-}
-
-/*NEURAL NETWORK SECTION END*/
 
 typedef struct agent_struct
 {
   int x;
   int y;
-  //int* dirs; 
+  //int* dirs;
+  int* input;
   double reward;
   nn* n;
   //int seed;
@@ -208,14 +35,26 @@ void reset_agent(agent* a)
     a->reward = 0;
 }
 
+void update_inputs(agent* a)
+{
+  //Assumes the array is already malloced
+  a->input[0] = a->x;
+  a->input[1] = a->y;
+  a->input[2] = END_X;
+  a->input[3] = END_Y;
+}
+
 void do_agent(agent* a)
 {
   //srand(a->seed);
   reset_agent(a);
   for(int i=0; i < AGENT_STEPS; i++)
     {
+      update_inputs(a);
+      int dir = get_ans(guess(a->n, a->input), NEURAL_OUTPUT);
       //a->dir = rand()%4;
-      switch(a->dirs[i])
+      //printf("%d\n", dir);
+      switch(dir)
 	{
 	case 0:
 	  {
@@ -238,7 +77,7 @@ void do_agent(agent* a)
 	    break;
 	  }
       
-	}
+	  }
 	if(a->x == END_X && a->y == END_Y)
 	{
 	    a->reward = 10000.0/i;
@@ -249,44 +88,15 @@ void do_agent(agent* a)
     }
 }
 
-void copy_dirs_from(agent* base, agent* end)
-{
-  for(int i=0; i < AGENT_STEPS; i++)
-    {
-      end->dirs[i] = base->dirs[i];
-    }
-}
-
-void copy_dirs_from_start_end(agent* base, agent* target, int start, int end)
-{
-  for(int i=start; i < end; i++)
-    {
-      target->dirs[i] = base->dirs[i];
-    }
-}
-
+//Copies from a into b
 void copy(agent* a, agent* b)
 {
   //b->x = a->x;
   //b->y = a->y;
   b->reward = a->reward;
-  copy_dirs_from(a, b);
+  copy_neural_network(a->n, b->n);
+  //copy_dirs_from(a, b);
   //b->seed = a->seed;
-}
-
-void randomize_dirs(agent* a)
-{
-  for(int i=0; i < AGENT_STEPS; i++)
-    {
-      a->dirs[i] = rand()%4;
-    }
-}
-
-void init_dirs(agent* a)
-{
-  //IF THIS IS CALLED MORE THAN ONCE IT WILL LEAK MEMORY
-  a->dirs = malloc(sizeof(int)*AGENT_STEPS);
-  randomize_dirs(a);
 }
 
 void init_agents(int count)
@@ -299,58 +109,45 @@ void init_agents(int count)
       agents[i].x = 0;
       agents[i].y = 0;
       //agents[i].dir = 0;
-      init_dirs(&(agents[i]));
+      //init_dirs(&(agents[i]));
+      agents[i].input = malloc(sizeof(int)*NEURAL_INPUT);
       agents[i].reward = 0;
-      //agents[i].seed = rand();
+      //agents[i].seed = rand()
+      agents[i].n = malloc(sizeof(*agents[i].n));
+      init_network(agents[i].n);
+      
     }
 }
 
-void evolve(agent* base, agent* better, int l)
+void evolve(agent* base, agent* better, int level)
 {
-  if(l == LEVEL_MUTATE)
+  if(level == LEVEL_MUTATE)
     {
-      //Randomly choose index
-      //Randomly choose whether to change first or second half
-      //10% chance to mutate 10% of the dirs
-      
       int index = rand()%AGENT_STEPS;
-      if(rand()%2 == 0)//FIRST HALF
-	{
-	  //end = AGENT_STEPS;
-	  copy_dirs_from_start_end(better, base, 0, index);
-	}
-      else//SECOND HALF
-	{
-	  copy_dirs_from_start_end(better, base, index, AGENT_STEPS);
-	}
 
-      if(rand()%10 == 0)
+      if(rand()%2 == 0)//INPUT -> HIDDEN WEIGHTS
 	{
-	  int count = rand()%(AGENT_STEPS/10);
-	  for(int i=0; i < count; i++)
+      
+	  for(int i=0; i < rand()%NEURAL_INPUT*NEURAL_HIDDEN; i++)
 	    {
-	      base->dirs[rand()%AGENT_STEPS] = rand()%4;
-	      //randomize_dirs(base);
+	      int randInput = rand()%NEURAL_INPUT;
+	      int randHidden = rand()%NEURAL_HIDDEN;
+	      base->n->in_to_hid[randInput][randHidden] = better->n->in_to_hid[randInput][randHidden];
 	    }
 	}
+	  else // HIDDEN -> OUTPUT WEIGHTS
+	    {
+	      for(int i=0; i < rand()%NEURAL_HIDDEN*NEURAL_OUTPUT; i++)
+		{
+		  int randHidden = rand()%NEURAL_HIDDEN;
+		  int randOutput = rand()%NEURAL_OUTPUT;
+		  base->n->hid_to_out[randHidden][randOutput] = better->n->hid_to_out[randHidden][randOutput];
+		}
+	    }
     }
-  else if(l == LEVEL_BEST)
+  else
     {
-      //bottom half (minus the bottom 10)
-      //Convert entire ai to Best
-      //Mutate 10% of dirs
-      copy_dirs_from(better, base);
-      int count = rand()%(AGENT_STEPS/5);
-      for(int i=0; i < count; i++)
-	{
-	  base->dirs[i] = rand()%4;
-	}
-      
-    }
-  else if(l == LEVEL_RANDOM)
-    {
-      //Last 10% just randomly generate
-      randomize_dirs(base);
+      randomize_weights(base->n);
     }
 }
 
@@ -365,12 +162,16 @@ void sort()
 	  if(agents[i+1].reward > agents[i].reward)
 	    {
 	      agent temp;
-	      init_dirs(&temp);
+	      temp.n = malloc(sizeof(*temp.n));
+	      init_network(temp.n);
+	      //init_dirs(&temp);
 	      copy(&(agents[i+1]), &temp);
 	      copy(&(agents[i]), &(agents[i+1]));
 	      copy(&temp, &(agents[i]));
 	      //agents[i+1] = agents[i];
 	      //agents[i] = temp;
+
+	      free(temp.n);
 	      done = 0;
 	    }
 	}
@@ -385,7 +186,7 @@ double dist(int x, int y)
 void get_reward(agent* a)
 {
     if(a->reward < 0)
-    a->reward *= dist(a->x, a->y);
+      a->reward *= dist(a->x, a->y);
   //return a->reward;
 }
 
@@ -421,47 +222,48 @@ int main()
 	  evolve(&(agents[i]), &(agents[i-1]), LEVEL_MUTATE);
 	}
 
-      for(int i=agent_count/2; i < agent_count-10; i++)
+      for(int i=agent_count/2; i < agent_count-(agent_count/10); i++)
 	{
 	  evolve(&(agents[i]), &(agents[0]), LEVEL_BEST);
 	}
 
-      for(int i=agent_count-10; i < agent_count; i++)
+      for(int i=agent_count-(agent_count/10); i < agent_count; i++)
 	{
 	  evolve(&(agents[i]), &(agents[0]), LEVEL_RANDOM);
 	}
       z++;
     }
-  //printf("%d | Best: %lf x: %d y: %d | Worst: %lf x: %d y: %d\n", z, agents[0].reward, agents[0].x, agents[0].y, agents[agent_count-1].reward, agents[agent_count-1].x, agents[agent_count-1].y);
+  printf("%d | Best: %lf x: %d y: %d | Worst: %lf x: %d y: %d\n", z, agents[0].reward, agents[0].x, agents[0].y, agents[agent_count-1].reward, agents[agent_count-1].x, agents[agent_count-1].y);
 
-    int x = 0;
-    int y = 0;
+    reset_agent(&(agents[0]));
     for(int i=0; i < AGENT_STEPS; i++)
     {
-        switch(agents[0].dirs[i])
+      update_inputs(&(agents[0]));
+      int dir = get_ans(guess(agents[0].n, agents[0].input), NEURAL_OUTPUT);
+      switch(dir)
 	{
 	case 0:
 	  {
-	    x++;
+	    agents[0].x++;
 	    break;
 	  }
 	case 1:
 	  {
-	    x--;
+	    agents[0].x--;
 	    break;
 	  }
 	case 2:
 	  {
-	    y++;
+	    agents[0].y++;
 	    break;
 	  }
 	case 3:
 	  {
-	    y--;
+	    agents[0].y--;
 	    break;
 	  }
     }
-    printf("dirs[%d]: %d X: %d Y: %d\n", i, agents[0].dirs[i], x, y);
+      printf("X: %d Y: %d\n", agents[0].x, agents[0].y);
     }
 
   //Free all memory
