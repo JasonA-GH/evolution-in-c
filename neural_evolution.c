@@ -51,7 +51,7 @@ void do_agent(agent* a)
   for(int i=0; i < AGENT_STEPS; i++)
     {
       update_inputs(a);
-      int dir = get_ans(guess(a->n, a->input), NEURAL_OUTPUT);
+      int dir = get_ans(guess(a->n, a->input), neural_output);
       //a->dir = rand()%4;
       //printf("%d\n", dir);
       switch(dir)
@@ -110,11 +110,11 @@ void init_agents(int count)
       agents[i].y = 0;
       //agents[i].dir = 0;
       //init_dirs(&(agents[i]));
-      agents[i].input = malloc(sizeof(int)*NEURAL_INPUT);
+      agents[i].input = malloc(sizeof(int)*neural_input);
       agents[i].reward = 0;
       //agents[i].seed = rand()
       agents[i].n = malloc(sizeof(*agents[i].n));
-      init_network(agents[i].n);
+      init_network(agents[i].n, 4, 2, 4);
       
     }
 }
@@ -128,19 +128,19 @@ void evolve(agent* base, agent* better, int level)
       if(rand()%2 == 0)//INPUT -> HIDDEN WEIGHTS
 	{
       
-	  for(int i=0; i < rand()%NEURAL_INPUT*NEURAL_HIDDEN; i++)
+	  for(int i=0; i < rand()%neural_input*neural_hidden; i++)
 	    {
-	      int randInput = rand()%NEURAL_INPUT;
-	      int randHidden = rand()%NEURAL_HIDDEN;
+	      int randInput = rand()%neural_input;
+	      int randHidden = rand()%neural_hidden;
 	      base->n->in_to_hid[randInput][randHidden] = better->n->in_to_hid[randInput][randHidden];
 	    }
 	}
 	  else // HIDDEN -> OUTPUT WEIGHTS
 	    {
-	      for(int i=0; i < rand()%NEURAL_HIDDEN*NEURAL_OUTPUT; i++)
+	      for(int i=0; i < rand()%neural_hidden*neural_output; i++)
 		{
-		  int randHidden = rand()%NEURAL_HIDDEN;
-		  int randOutput = rand()%NEURAL_OUTPUT;
+		  int randHidden = rand()%neural_hidden;
+		  int randOutput = rand()%neural_output;
 		  base->n->hid_to_out[randHidden][randOutput] = better->n->hid_to_out[randHidden][randOutput];
 		}
 	    }
@@ -163,7 +163,7 @@ void sort()
 	    {
 	      agent temp;
 	      temp.n = malloc(sizeof(*temp.n));
-	      init_network(temp.n);
+	      init_network(temp.n, neural_input, neural_hidden, neural_output);
 	      //init_dirs(&temp);
 	      copy(&(agents[i+1]), &temp);
 	      copy(&(agents[i]), &(agents[i+1]));
@@ -239,7 +239,7 @@ int main()
     for(int i=0; i < AGENT_STEPS; i++)
     {
       update_inputs(&(agents[0]));
-      int dir = get_ans(guess(agents[0].n, agents[0].input), NEURAL_OUTPUT);
+      int dir = get_ans(guess(agents[0].n, agents[0].input), neural_output);
       switch(dir)
 	{
 	case 0:
